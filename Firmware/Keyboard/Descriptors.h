@@ -40,8 +40,8 @@
 		#include <avr/pgmspace.h>
 
 		#include <LUFA/Drivers/USB/USB.h>
-        
-        #include "Config.h"
+
+        #define TATACON_CONFIG_BYTES 8
 
 	/* Type Defines: */
 		/** Type define for the device configuration descriptor structure. This must be defined in the
@@ -56,7 +56,7 @@
 			USB_Descriptor_Interface_t            HID1_Interface;
 			USB_HID_Descriptor_HID_t              HID1_KeyboardHID;
 			USB_Descriptor_Endpoint_t             HID1_ReportINEndpoint;
-            
+
             // Generic HID Interface
 			USB_Descriptor_Interface_t            HID2_Interface;
 			USB_HID_Descriptor_HID_t              HID2_VendorHID;
@@ -89,7 +89,7 @@
 	/* Macros: */
 		/** Endpoint address of the Keyboard HID reporting IN endpoint. */
 		#define KEYBOARD_EPADDR              (ENDPOINT_DIR_IN | 1)
-        
+
         #define GENERIC_EPADDR               (ENDPOINT_DIR_IN | 2)
 
 		/** Size in bytes of the Keyboard HID reporting IN endpoint. */
