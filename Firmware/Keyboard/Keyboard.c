@@ -62,7 +62,7 @@ USB_ClassInfo_HID_Device_t Generic_HID_Interface =
             .PrevReportINBufferSize       = sizeof(PrevGenericHIDReportBuffer),
         },
 };
-    
+
 typedef struct {
     // optimise data sending
     uint8_t state;
@@ -130,7 +130,7 @@ void Nunchuck_Init(void) {
         i2c_write(0x55);
         i2c_stop();
         _delay_ms(25);
-        
+
         i2c_start(NUNCHUCK_ADDR | I2C_WRITE);
         i2c_write(0xFB);
         i2c_write(0x00);
@@ -144,7 +144,7 @@ void Nunchuck_Init(void) {
 
 uint8_t Nunchuck_ReadByte(uint8_t address) {
     uint8_t data = 0xFF;
-    
+
     if(!nunchuckReady) {
         Nunchuck_Init();
     }
@@ -165,7 +165,7 @@ uint8_t Nunchuck_ReadByte(uint8_t address) {
 
 // Starting at address, read n bytes and return the last
 void Nunchuck_ReadMany(uint8_t address, uint8_t *data, uint8_t count) {
-    
+
     if(!nunchuckReady) {
         Nunchuck_Init();
     }
@@ -188,7 +188,7 @@ void Nunchuck_ReadMany(uint8_t address, uint8_t *data, uint8_t count) {
 
 void update_switches(void) {
     uint8_t data, i;
-    
+
     // Data for the buttons is at this address
     data = Nunchuck_ReadByte(0x05);
 
@@ -216,13 +216,13 @@ int main(void)
         switches[i].lastReport = 0;
         switches[i].debounce = 0;
     }
-    
-    InitConfig();
-    
-	SetupHardware();
 
-	GlobalInterruptEnable();
-    
+    InitConfig();
+
+    SetupHardware();
+
+    GlobalInterruptEnable();
+
 #ifdef DEBUG
     printf_P(PSTR("Tatacon to USB Debug Mode\n\n"));
     uint8_t tmp[6];
@@ -254,26 +254,26 @@ int main(void)
     printf_P(PSTR("Key order: DL, KL, CR, KR\n"));
 #endif
 
-	for (;;)
-	{
-		HID_Device_USBTask(&Keyboard_HID_Interface);
-		HID_Device_USBTask(&Generic_HID_Interface);
-		USB_USBTask();
-	}
+    for (;;)
+    {
+        HID_Device_USBTask(&Keyboard_HID_Interface);
+        HID_Device_USBTask(&Generic_HID_Interface);
+        USB_USBTask();
+    }
 }
 
 void SetupHardware()
 {
-	/* Disable watchdog if enabled by bootloader/fuses */
-	MCUSR &= ~(1 << WDRF);
-	wdt_disable();
-    
+    /* Disable watchdog if enabled by bootloader/fuses */
+    MCUSR &= ~(1 << WDRF);
+    wdt_disable();
+
 #ifdef V1_BUILD
     CLKPR = (1 << CLKPCE); // enable a change to CLKPR
-	CLKPR = 0; // set the CLKDIV to 0 - was 0011b = div by 8 taking 8MHz to 1MHz
+    CLKPR = 0; // set the CLKDIV to 0 - was 0011b = div by 8 taking 8MHz to 1MHz
 #endif
 
-	/* Hardware Initialization */
+    /* Hardware Initialization */
     SET(LED_DIR, DON_LED_PIN);
     SET(LED_DIR, KAT_LED_PIN);
 #ifdef DEBUG
@@ -292,7 +292,7 @@ void SetupHardware()
     }
     i2c_init();
     Nunchuck_Init();
-	USB_Init();
+    USB_Init();
 }
 
 /** HID class driver callback function for the creation of HID reports to the host.
@@ -341,15 +341,15 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
         }
 #else
         update_switches();
-        
+
         if(!switchesChanged) {
             *ReportSize = 0;
             return false;
         }
-        
+
         CLEAR(LED_PORT, DON_LED_PIN);
         CLEAR(LED_PORT, KAT_LED_PIN);
-         
+
         for(uint8_t i = 0; i < KB_SWITCHES; i++) {
             KeyboardReport->KeyCode[i] = switches[i].state ? tataConfig.switches[i] : 0;
             switches[i].lastReport = switches[i].state;
@@ -364,9 +364,9 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                 }
             }
         }
-         
+
         *ReportSize = sizeof(USB_KeyboardReport_Data_t);
-         
+
         switchesChanged = 0;
         return true;
 #endif
@@ -417,37 +417,37 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 /** Event handler for the library USB Connection event. */
 void EVENT_USB_Device_Connect(void)
 {
-	
+
 }
 
 /** Event handler for the library USB Disconnection event. */
 void EVENT_USB_Device_Disconnect(void)
 {
-    
+
 }
 
 /** Event handler for the library USB Configuration Changed event. */
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
-	HID_Device_ConfigureEndpoints(&Keyboard_HID_Interface);
-	HID_Device_ConfigureEndpoints(&Generic_HID_Interface);
+    HID_Device_ConfigureEndpoints(&Keyboard_HID_Interface);
+    HID_Device_ConfigureEndpoints(&Generic_HID_Interface);
 
-	USB_Device_EnableSOFEvents();
+    USB_Device_EnableSOFEvents();
 }
 
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
-	HID_Device_ProcessControlRequest(&Keyboard_HID_Interface);
-	HID_Device_ProcessControlRequest(&Generic_HID_Interface);
+    HID_Device_ProcessControlRequest(&Keyboard_HID_Interface);
+    HID_Device_ProcessControlRequest(&Generic_HID_Interface);
 }
 
 /** Event handler for the USB device Start Of Frame event. */
 void EVENT_USB_Device_StartOfFrame(void)
 {
-	HID_Device_MillisecondElapsed(&Keyboard_HID_Interface);
-	HID_Device_MillisecondElapsed(&Generic_HID_Interface);
-    
+    HID_Device_MillisecondElapsed(&Keyboard_HID_Interface);
+    HID_Device_MillisecondElapsed(&Generic_HID_Interface);
+
     for(int i = 0; i < KB_SWITCHES; i++) {
         if(switches[i].debounce) {
             switches[i].debounce--;
